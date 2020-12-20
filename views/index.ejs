@@ -37,6 +37,12 @@
     var config = {
         maxWebWorkers: navigator.hardwareConcurrency || 1,
         startWebWorkersOnDemand : true,
+        taskConfiguration:{
+          'decodeTask':{
+            initializeCodecsOnStartup:true,
+            usePDFJS:true
+          }
+        }
     };
     cornerstoneWADOImageLoader.webWorkerManager.initialize(config);
   }
@@ -45,11 +51,7 @@
     let series = document.getElementById("series").value;
     let url = `http://127.0.0.1:3000/images?Study=${StudyID}&series=${series}`;
     multiFrameImages(url);
-    // let element = document.getElementById("dicomImage");
-    // cornerstone.enable(element);
-    // cornerstone.loadImage(ImageId).then((image)=>{
-    //   cornerstone.displayImage(element,image);
-    // });
+
   }
   let loaded = false;
   function multiFrameImages(url){
@@ -60,19 +62,16 @@
             alert('Missing element NumberOfFrames (0028,0008)');
             return;
         }
-
         var imageIds = [];
         var imageIdRoot = 'wadouri:' + url;
         for(var i=0; i < numFrames; i++) {
             var imageId = imageIdRoot + "?frame="+i;
             imageIds.push(imageId);
         }
-
         var stack = {
             currentImageIdIndex : 0,
             imageIds: imageIds
         };
-
         cornerstone.loadAndCacheImage(imageIds[0]).then((image)=>{
           console.log(image);
           cornerstoneWADOImageLoader.wadouri.dataSetCacheManager.unload(url);
@@ -89,15 +88,11 @@
               cornerstoneTools.addTool(playClip);
               cornerstoneTools.setToolActive('Wwwc', { mouseButtonMask: 1 });
               cornerstoneTools.setToolActive('StackScrollTool', { mouseButtonMask: 2 });
-              //cornerstoneTools.setToolActive('playClip', { mouseButtonMask: 2 });
+              cornerstoneTools.setToolActive('playClip', { mouseButtonMask: 2 });
               cornerstoneTools.addStackStateManager(element, ['stack'])
               cornerstoneTools.addToolState(element, 'stack', stack)
-              //cornerstoneTools.wwwc.activate(element, 1); // ww/wc is the default tool for left mouse button
-              // Set the stack as tool state
-              //cornerstoneTools.addStackStateManager(element, ['stack', 'playClip']);
-              //cornerstoneTools.addToolState(element, 'stack', stack);
-              // Start playing the clip
-              // TODO: extract the frame rate from the dataset
+              cornerstoneTools.addStackStateManager(element, ['stack', 'playClip']);
+              cornerstoneTools.addToolState(element, 'stack', stack);
               var frameRate = 10;
               cornerstoneTools.playClip(element, frameRate);
               loaded = true;
