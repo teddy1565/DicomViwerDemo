@@ -22,6 +22,7 @@
       <div class="row justify-content-center">
         <input type="text" class="text" id="Study" placeholder="Study">
         <input type="text" class="text" id="series" placeholder="Series">       
+        <input type="text" class="text" id="IMGNUM" placeholder="第幾份影像">       
         <button class="btn btn-success" onclick="Query()">查詢</button>
       </div>
     </div>
@@ -49,15 +50,18 @@
   function Query(){
     let StudyID = document.getElementById("Study").value;
     let series = document.getElementById("series").value;
-    let url = `http://127.0.0.1:3000/images?Study=${StudyID}&series=${series}`;
+    let num = document.getElementById("IMGNUM").value;
+   
+    let url = `http://127.0.0.1:3000/images?Study=${StudyID}&series=${series}&num=${num}`;
+    
     multiFrameImages(url);
-
   }
   let loaded = false;
   function multiFrameImages(url){
     let element = document.getElementById("dicomImage");
     cornerstoneWADOImageLoader.wadouri.dataSetCacheManager.load(url,cornerstoneWADOImageLoader.internal.xhrRequest).then((dataSet)=>{
         let numFrames = dataSet.intString('x00280008');
+        if(!numFrames)numFrames=1;
         if(!numFrames) {
             alert('Missing element NumberOfFrames (0028,0008)');
             return;
